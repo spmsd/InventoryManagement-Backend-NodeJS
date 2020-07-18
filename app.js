@@ -16,12 +16,29 @@ const Categories = require('./models/categories');
 const url = 'mongodb://localhost:27017/vegFruits';
 const connect = mongoose.connect(url);
 
+const cors = require('cors');
+
+
+
 connect.then((db) => {
     console.log("Connected correctly to server");
 }, (err) => { console.log(err); });
 
 
 var app = express();
+
+app.all('*', (req, res, next) => {
+  if (req.secure) {
+    return next();
+  }
+  else {
+    res.redirect(307, 'https://' + req.hostname + ':' + app.get('secPort') + req.url);
+  }
+});
+
+
+  
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -32,6 +49,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

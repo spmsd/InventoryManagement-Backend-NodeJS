@@ -3,14 +3,15 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const Categories = require('../models/categories');
 const Inventories = require('../models/inventories');
-
+const cors = require('./cors');
 const categoryRouter = express.Router();
 
 categoryRouter.use(bodyParser.json());
 
 categoryRouter.route('/')  // all the request are chained to the  router
-.get((req,res,next) => {
-    Categories.find({})
+.options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
+.get(cors.cors,(req,res,next) => {
+    Categories.find(req.query)
     .then((categories) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -18,21 +19,35 @@ categoryRouter.route('/')  // all the request are chained to the  router
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.post((req, res, next) => {
-    res.end('POST operation not supported on /categories');
+.post(cors.corsWithOptions,(req, res, next) => {
+    Categories.create(req.body)
+    .then((category) => {
+        console.log('category Created ', category);
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(category);
+    }, (err) => next(err))
+    .catch((err) => next(err));
 })
-.put((req, res, next) => {
+.put(cors.corsWithOptions,(req, res, next) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /categories');
 })
-.delete((req, res, next) => {
-    res.end('Delete operation not supported on /categories');
+.delete(cors.corsWithOptions,(req, res, next) => {
+    Categories.remove({})
+    .then((resp) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(resp);
+    }, (err) => next(err))
+    .catch((err) => next(err));    
 });
 
 // For specific category
-categoryRouter.route('/:categoryId')
-.get((req,res,next) => {
-    Inventories.find( {categoryId : req.params.categoryId})
+categoryRouter.route('/:categoryName')
+.options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
+.get(cors.cors,(req,res,next) => {
+    Inventories.find( {categories : req.params.categoryName})
     .then((inventory) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -40,15 +55,15 @@ categoryRouter.route('/:categoryId')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.post((req, res, next) => {
+.post(cors.corsWithOptions,(req, res, next) => {
   res.statusCode = 403;
   res.end('POST operation not supported on /categories/'+ req.params.categoryId);
 })
-.put((req, res, next) => {
+.put(cors.corsWithOptions,(req, res, next) => {
   res.statusCode = 403;
   res.end('PUT operation not supported on /categories/'+ req.params.categoryId);
 })
-.delete((req, res, next) => {
+.delete(cors.corsWithOptions,(req, res, next) => {
   res.statusCode = 403;
   res.end('DELETE operation not supported on /categories/'+ req.params.categoryId);
 });

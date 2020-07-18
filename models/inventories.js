@@ -30,13 +30,10 @@ var inventorySchema = new Schema({  // schema for the inventory
         type: String,
         required: true      
     },
-    categoryId: {
+    categories :{
         type: String,
         required: true
-    },
-    categories :{type: mongoose.Schema.Types.ObjectId,
-
-            ref: 'Category'}
+    }
 }, {
     timestamps: true //created at, updated at will be auto populated
 });
